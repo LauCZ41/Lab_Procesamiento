@@ -55,6 +55,21 @@
 | **C (Cores físicos)** | 8 |        114809         |         15380          |                          7.46                          |                        745.5                         | Saturación de cores físicos |
 | **D (Sobredimensionado)**| 64 |        116407         |          8745          |                         13.31                          |                        1331.1                        | Contención extrema / Context switching |
 
+**Computador:  Victus by HP Gaming Laptop 15-fa0xxx. Processor: 12th Gen Intel(R) Core(TM) i5-12450H (2.00 GHz) - Nicholas** 
+
+* **Estrategia Fija:** FixedTileSize (Baldosas 256x256)
+* **Preset / Región:** `seahorse` (3840 x 2160, 5000 iteraciones)
+* **Número de Workers Activos:** $p = 1$
+* **Tiempo Secuencial Base ($T_{\text{sec}}$):** `120767 ms`
+
+| Configuración | Hilos en Worker | $T_{\text{sec}}$ (ms) | $T_{\text{dist}}$ (ms) | Speedup ($S = \frac{T_{\text{sec}}}{T_{\text{dist}}}$) | Eficiencia ($E = \frac{S}{\text{Hilos}} \times 100$) | Observaciones |
+| :--- | :---: |:---------------------:|:----------------------:|:------------------------------------------------------:|:----------------------------------------------------:| :--- |
+| **A (Monohilo)** | 1 |        129069         |         142490         |                          0,91x                          |                         90,6                         | Monohilo puro por nodo |
+| **B (Bihilo)** | 2 |        115383         |         60709          |                          1.90                          |                        190.1                         | 2 hilos en paralelo |
+| **C (Cores físicos)** | 8 |        114809         |         15380          |                          7.46                          |                        745.5                         | Saturación de cores físicos |
+| **D (Sobredimensionado)**| 64 |        116407         |          8745          |                         13.31                          |                        1331.1                        | Contención extrema / Context switching |
+
+
 ---
 
 ## 3. Experimento 
@@ -77,7 +92,7 @@ Realizado con workers repartidos entre dos maquinas:
 ## 4. Cuestionario de Análisis Conceptual y Discusión Técnica
 
 ### 1. Colapso por Grano Fino
-*Al ejecutar con baldosas de 16x16 (o grano muy fino), se generan más de 8,000 llamadas RPC sobre la red. Explique técnicamente por qué el tiempo distribuido $T_{\text{dist}}$ se degrada frente a baldosas de 64x64, analizando el costo de serialización binaria en Slice, latencia de red TCP y cambios de contexto en el Maestro.*  
+*Al ejecutar con baldosas de 16x16 (o grano muy fino), se generan más de 8,000 llamadas RPC sobre la red. Explique técnicamente por qué el tiempo distribuido $T_{dist}$ se degrada frente a baldosas de 64x64, analizando el costo de serialización binaria en Slice, latencia de red TCP y cambios de contexto en el Maestro.*  
 
 Al utilizar un grano muy fino como el de 16x16 se tienen que realizar más de 8,000 llamadas RPC, lo cual no es eficiente porque se incrementa la latencia de red en TCP por cada paquete enviado y al ser tantas llamadas, el sistema pierde demasiado tiempo empaquetando y reconstruyendo los datos. Además, el Maestro se satura atendiendo tantas peticiones al mismo tiempo, sufriendo una sobrecarga por cambios de contexto entre los hilos. En cambio cuando se utilizan baldosas de 64x64 las llamadas se reducen, por lo que no se genera tanta latencia, se evita el desgaste de serializar miles de paquetes pequeños y el Maestro puede procesar y consolidar la imagen mucho más rápido sin saturar la CPU.
 
