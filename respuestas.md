@@ -65,9 +65,9 @@
 | Configuración | Hilos en Worker | $T_{\text{sec}}$ (ms) | $T_{\text{dist}}$ (ms) | Speedup ($S = \frac{T_{\text{sec}}}{T_{\text{dist}}}$) | Eficiencia ($E = \frac{S}{\text{Hilos}} \times 100$) | Observaciones |
 | :--- | :---: |:---------------------:|:----------------------:|:------------------------------------------------------:|:----------------------------------------------------:| :--- |
 | **A (Monohilo)** | 1 |        129069         |         142490         |                          0,91x                          |                         90,6                         | Monohilo puro por nodo |
-| **B (Bihilo)** | 2 |        115383         |         60709          |                          1.90                          |                        190.1                         | 2 hilos en paralelo |
-| **C (Cores físicos)** | 8 |        114809         |         15380          |                          7.46                          |                        745.5                         | Saturación de cores físicos |
-| **D (Sobredimensionado)**| 64 |        116407         |          8745          |                         13.31                          |                        1331.1                        | Contención extrema / Context switching |
+| **B (Bihilo)** | 2 |        142915         |         52005          |                          2,75x                          |                        274,8                         | 2 hilos en paralelo |
+| **C (Cores físicos)** | 8 |        12988         |         22934          |                           5,66x                          |                        566,3                         | Saturación de cores físicos |
+| **D (Sobredimensionado)**| 64 |        181027         |          15347          |                          11,80x                          |                        1179,6                        | Contención extrema / Context switching |
 
 
 ---
@@ -91,14 +91,19 @@ Realizado con workers repartidos entre dos maquinas:
 
 ## 4. Cuestionario de Análisis Conceptual y Discusión Técnica
 
-### 1. Colapso por Grano Fino
+### 1. La Trampa del Espacio Vacío vs. Zona de Estrés: 
+*Explique por qué el cómputo monohilo secuencial en la vista cl  ́asica
+(classic) parece r  ́apido a pesar de fijar 5,000 iteraciones, y contraste este comportamiento con el tiempo obtenido al renderizar
+la regi  ́on hiperdensa de Seahorse Valley. ¿Por qu  ́e la vista macro oculta la necesidad de un clúster distribuid*
+
+### 2. Colapso por Grano Fino
 *Al ejecutar con baldosas de 16x16 (o grano muy fino), se generan más de 8,000 llamadas RPC sobre la red. Explique técnicamente por qué el tiempo distribuido $T_{dist}$ se degrada frente a baldosas de 64x64, analizando el costo de serialización binaria en Slice, latencia de red TCP y cambios de contexto en el Maestro.*  
 
 Al utilizar un grano muy fino como el de 32x32 se tienen que realizar más de 8,000 llamadas RPC, lo cual no es eficiente porque se incrementa la latencia de red en TCP por cada paquete enviado y al ser tantas llamadas, el sistema pierde demasiado tiempo empaquetando y reconstruyendo los datos. Además, el Maestro se satura atendiendo tantas peticiones al mismo tiempo, sufriendo una sobrecarga por cambios de contexto entre los hilos. En cambio cuando se utilizan baldosas de 64x64 las llamadas se reducen, por lo que no se genera tanta latencia, se evita el desgaste de serializar miles de paquetes pequeños y el Maestro puede procesar la imagen mucho más rápido.
 
 ---
 
-### 2. Fracaso de la Partición Estática
+### 3. Fracaso de la Partición Estática
 *Al dividir la imagen en 2 o 4 franjas fijas (FixedCount), compare el tiempo de cómputo reportado por cada worker. ¿Por qué ocurre un desbalance de carga tan severo y cómo el patrón Bag of Tasks resuelve esta limitación?*
 
 > **Respuesta:**  
@@ -106,7 +111,7 @@ Al utilizar un grano muy fino como el de 32x32 se tienen que realizar más de 8,
 
 ---
 
-### 3. Límites del ThreadPool
+### 4. Límites del ThreadPool
 *En el Experimento 2, ¿qué ocurrió al elevar el pool de hilos a 64? ¿La velocidad creció proporcionalmente o se degradó? Explique el fenómeno de contención de CPU y alternancia de contexto (thread context switching).*
 
 > **Respuesta:**  
@@ -114,7 +119,7 @@ Al utilizar un grano muy fino como el de 32x32 se tienen que realizar más de 8,
 
 ---
 
-### 4. Ley de Amdahl
+### 5. Ley de Amdahl
 *A partir de la curva de aceleración obtenida en el Experimento 3, estime la fracción estrictamente secuencial $(1 - f)$ del sistema impuesta por la generación de tareas, encolado y reensamblado en el Maestro.*
 
 > **Respuesta:**  
@@ -122,7 +127,7 @@ Al utilizar un grano muy fino como el de 32x32 se tienen que realizar más de 8,
 
 ---
 
-## 5. Bitácora de Uso Ético de IAG (Nivel 3: Colaboración Asistida)
+## 6. Bitácora de Uso Ético de IAG (Nivel 3: Colaboración Asistida)
 
 * **Herramienta utilizada:** Asistente IA (Gemini / Antigravity IDE)
 * **Prompts clave utilizados:**
