@@ -1,0 +1,278 @@
+=== Page 1 ===
+UNIVERSIDAD ICESI
+TALLER EVALUATIVO: COMPUTACI´ON EN INTERNET I
+Per´ıodo: 2026-2•NRC: 12378 / 12377•Modalidad: Equipos de 2 o 3 Estudiantes
+P´ag. 1 de 5
+TALLER EVALUATIVO DE PROCESAMIENTO DISTRIBUIDO Y BENCHMARKING EMP´IRICO
+Renderizado Paralelo de Fractales con Patr´on Master-Worker y Bag of Tasks
+FACULTAD DE INGENIER´IA, DISE ˜NO Y CIENCIAS APLICADAS DEPARTAMENTO DE COMPUTACI´ON Y SISTEMAS
+INTELIGENTES
+INFORMACI ´ON DE LA ACTIVIDAD IDENTIFICACI ´ON
+C ´ODIGO:
+09810 - TIC
+PER´IODO:
+202620 (Semestre 2026-2)
+NRC / GRUPO:
+12378 / 12377
+CAR ´ACTER:
+Taller Evaluativo / Laboratorio Pr´actico
+MODALIDAD:
+Equipos de 2 o 3 Estudiantes
+DURACI ´ON:
+2 Horas en Clase + Cierre Aut´onomo en
+el D´ıa
+POL´ITICA IAG:
+Nivel 3: Colaboraci´on Asistida
+TEMA CENTRAL:
+Procesamiento Distribuido (MIMD /
+NORMA)
+ESTUDIANTE 1: C ´ODIGO:
+ESTUDIANTE 2: C ´ODIGO:
+ESTUDIANTE 3: C ´ODIGO:
+1Contexto del Problema y Desaf´ ıo de Ingenier´ ıa
+En etapas previas exploramos el middleware ZeroC Ice y los contratos en lenguaje Slice (.ice) para comunicar procesos
+transparentemente sobre la red. Sin embargo, en el dise ˜no de sistemas distribuidos empresariales y de c ´omputo en la nube,
+el middleware es ´unicamente la tuber ´ıa b ´asica (plumbing). El verdadero desaf ´ıo de ingenier ´ıa consiste en responder:¿C ´omo
+dividimos un problema computacional pesado y c ´omo calibramos los par ´ametros de concurrencia para que el cl ´ uster
+realmente acelere el procesamiento?
+En este taller evaluativo implementaremos y analizaremos un cl´uster de procesamiento distribuido bajo el patr´on arquitect´onico
+Master-Workerpara renderizar elConjunto de Mandelbrot, un fractal cuya funci ´on de escape recursiva (zn+1 =z 2n +c) demanda
+miles de millones de operaciones de punto flotante.
+La Trampa del Desbalance de Carga y la Granularidad
+El Conjunto de Mandelbrot posee una propiedad fundamental:su carga de c ´omputo es heterog´enea. Los p´ıxeles del exterior escapan en 1 o 2
+iteraciones (toman nanosegundos), mientras que los p´ıxeles interiores tardan el m´aximo de iteraciones (3,000a5,000; toman milisegundos). Si un
+arquitecto divide la imagen en franjas est ´aticas fijas, el nodo asignado al centro del fractal tardar ´a 20 veces m ´as que los nodos de los extremos,
+desperdiciando la capacidad del cl´uster.
+2Arquitectura del Sistema: Extracci ´on As´ ıncrona (Work-Pulling)
+A diferencia de modelos r´ıgidos donde el Maestro mantiene hilos bloqueados esperando a cada Worker, este sistema imple-
+Computaci´on en Internet I (09810 - TIC)•Taller Evaluativo: Renderizado Distribuido de Fractales (Master-Worker) Universidad Icesi•DCSI
+---PAGE---
+=== Page 2 ===
+UNIVERSIDAD ICESI
+TALLER EVALUATIVO: COMPUTACI´ON EN INTERNET I
+Per´ıodo: 2026-2•NRC: 12378 / 12377•Modalidad: Equipos de 2 o 3 Estudiantes
+P´ag. 2 de 5
+menta un modelo desacoplado basado en una **Bolsa de Tareas Concurrente (Bag of T asks)**:
++ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+
+| CLIENTE |
+| 1. Ejecuta computo mo noh il o s e c u e n c i a l ( T_sec de control ) |
+| 2. Invoca master . r e n d e r F r a c t a l ( config ) |
+| 3. Valida r e s u l t a d o celda por celda contra el m ono li to |
+| 4. Calcula Speedup ( S ) , E f i c i e n c i a ( E ) y guarda el PNG |
++ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+
+| I n v o c a c i o n RPC
+v
++ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+
+| MAESTRO ( MASTER ) |
+| - Aplica Patron St ra te gy para dividir el fractal en tareas |
+| - Encola las tareas en una C o n c u r r e n t L i n k e d Q u e u e ( Bolsa ) |
+| - Emite aviso a s i n c r o n o n o t i f y T a s k s A v a i l a b l e () a Workers |
+| - Atiende l la ma das po llT as k () y r e p o r t R e s u l t () |
+| - C o n s o l i d a i n c r e m e n t a l m e n t e los bloques de pixeles |
++ - - - - - - - - - - - - - -+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+ - - - - - - - - - - - - - -+
+| |
+(1) notify | (1) notify |
+(2) po ll Tas k | (2) po ll Tas k |
+(3) report | (3) report |
+v v
++ - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+ + - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+
+| WORKER 1 ( Worker -1) | | WORKER 2 ( Worker -2) |
+| - Bucle : po llT as k () | | - Bucle : pol lT as k () |
+| - Computo local i n t e n s i v o | | - Computo local i n t e n s i v o |
+| - master . r e p o r t R e s u l t () | | - master . r e p o r t R e s u l t () |
+| - Repite hasta cola vacia | | - Repite hasta cola vacia |
++ - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+ + - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+
+1.Registro y Espera Pasiva (Standby):Cada Worker inicia, activa su adaptador con la interfazWorkerObservery se registra
+ante el Maestro. Luego queda en reposo sin consumir CPU.
+2.Partici ´on y Notificaci ´on As´ ıncrona:Al recibir una orden de renderizado, el Maestro aplica el **Patr´on Strategy**, genera las
+tareas, las inserta en su cola y emite una notificaci´on no bloqueante a los Workers.
+3.Extracci ´on Din ´amica (Work-Pulling):Cada Worker ejecuta un bucle donde solicita una tarea al Maestro (pollTask()). Si
+hay tarea disponible, la procesa localmente con su pool de hilos, entrega el resultado parcial (reportResult()) y solicita
+inmediatamente la siguiente.
+4.Consolidaci ´on en Streaming:El Maestro ensambla los bloques de p´ıxeles directamente en la matriz final a medida que llegan.
+Cuando la ´ultima tarea es reportada, se completa la promesa y se retorna la imagen al Cliente.
+3Patr ´on Strategy: Estrategias de Descomposici´on
+El c´odigo base desacopla la creaci´on de tareas mediante la interfazTaskPartitionStrategy:
+package co . icesi . fractal . s tra te gy ;
+import F r a c t a l A p p . R e n d e r C o n f i g ;
+import F r a c t a l A p p . Tas kT ile ;
+import java . util . List ;
+public i n t e r f a c e T a s k P a r t i t i o n S t r a t e g y {
+List < TaskTile > p a r t i t i o n ( R e n d e r C o n f i g config ) ;
+String g e t S t r a t e g y N a m e () ;
+}
+Computaci´on en Internet I (09810 - TIC)•Taller Evaluativo: Renderizado Distribuido de Fractales (Master-Worker) Universidad Icesi•DCSI
+---PAGE---
+=== Page 3 ===
+UNIVERSIDAD ICESI
+TALLER EVALUATIVO: COMPUTACI´ON EN INTERNET I
+Per´ıodo: 2026-2•NRC: 12378 / 12377•Modalidad: Equipos de 2 o 3 Estudiantes
+P´ag. 3 de 5
+Se contemplan dos estrategias fundamentales:
+1.Estrategia 1:FixedCountPartitionStrategy(Divisi ´on enNtareas fijas):Divide la altura de la imagen enNfranjas hori-
+zontales contiguas. Cada franja abarca el ancho completo (W) y una altura aproximada deH/Np ´ıxeles.
+2.Estrategia 2:FixedTileSizePartitionStrategy(Divisi ´on por baldosasS×S):Divide la imagen en una cuadr ´ıcula bidimen-
+sional de baldosas cuadradas o rectangulares de tama˜no fijo (ej.16×16,64×64,128×128).
+4Estructura del Proyecto Gradle Multim ´odulo
+El c´odigo se organiza en 5 subm´odulos en **Gradle 8.6**:
+fractal - master - worker /
+| - - s et ti ngs . gradle# O r q u e s t a d o r m u l t i m o d u l o
+| - - build . gradle# C o n f i g u r a c i o n g l o b a l de Java 17 y Slice p l u g i n
+| - - common /# C o n t r a t o Slice , M a n d e l b r o t C o r e y E s t r a t e g i a s
+| | - - src / main / slice / F r a c t a l C o m p u t e . ice# D e f i n i c i o n IDL ( R e n d e r C o n f i g , TaskTile , T i l e R e s u l t )
+| ‘-- src / main / java / co / icesi / fractal /
+| | - - core / M a n d e l b r o t C o r e . java# Motor m a t e m a t i c o y g u a r d a d o de i m a g e n PNG
+| ‘-- s tr ate gy /# I n t e r f a z y f a c t o r i a de e s t r a t e g i a s
+| - - m on ol ith /# Linea base s e c u e n c i a l en una sola CPU
+| ‘-- src / main / java / co / icesi / fractal / m ono li th / M o n o l i t h i c M a i n . java
+| - - server /# S e r v i d o r M a e s t r o con bolsa de t a r e a s
+| ‘-- src / main / java / co / icesi / fractal / master / M a s t e r M a i n . java
+| - - worker /# Nodo T r a b a j a d o r con ciclo de e x t r a c c i o n
+| ‘-- src / main / java / co / icesi / fractal / worker / W o r k e r M a i n . java
+‘-- client /# C l i e n t e de b e n c h m a r k i n g y e j e c u t o r de e x p e r i m e n t o s
+‘-- src / main / java / co / icesi / fractal / client /
+| - - C l i e n t M a i n . java# V e r i f i c a c i o n de i n t e g r i d a d y c a l c u l o de S p e e d u p
+‘-- E x p e r i m e n t R u n n e r . java# A u t o m a t i z a d o r de la m a t r i z de p r u e b a s
+4.1 Comandos de Compilaci ´on y Ejecuci´on
+1.Compilar todo el proyecto:
+./ gradlew build
+2.Ejecutar el Monolito (L´ ınea Base Secuencial):
+./ gradlew : m on oli th : r u n M o n o l i t h -- args = " 1920 1080 3000 output / m a n d e l b r o t _ m o n o l i t h . png "
+3.Iniciar el Cl ´ uster Distribuido (Terminales Separadas):
+# T e r m i n a l 1 ( M a e s t r o ) :
+./ gradlew : server : r u n M a s t e r -- args = " 10000 "
+# T e r m i n a l 2 ( W o r k e r 1 con 4 hilos ) :
+./ gradlew : worker : r u n W o r k e r -- args = " 10001 Worker -1 l o c a l h o s t 10000 4 "
+# T e r m i n a l 3 ( W o r k e r 2 con 4 hilos ) :
+./ gradlew : worker : r u n W o r k e r -- args = " 10002 Worker -2 l o c a l h o s t 10000 4 "
+4.Ejecutar el Cliente de Verificaci ´on ´Unica:
+# A r g u m e n t o s : < host > < puerto > < ancho > < alto > < maxIter > < e s t r a t e g i a : 0= franjas , 1= baldosas > < parametro > < salida >
+./ gradlew : client : r u n C l i e n t -- args = " l o c a l h o s t 10000 1920 1080 3000 1 64 output / m a n d e l b r o t _ d i s t . png "
+5.Ejecutar la Matriz Automatizada de Experimentos:
+./ gradlew : client : r u n E x p e r i m e n t -- args = " l o c a l h o s t 10000 1920 1080 2000 "
+Computaci´on en Internet I (09810 - TIC)•Taller Evaluativo: Renderizado Distribuido de Fractales (Master-Worker) Universidad Icesi•DCSI
+---PAGE---
+=== Page 4 ===
+UNIVERSIDAD ICESI
+TALLER EVALUATIVO: COMPUTACI´ON EN INTERNET I
+Per´ıodo: 2026-2•NRC: 12378 / 12377•Modalidad: Equipos de 2 o 3 Estudiantes
+P´ag. 4 de 5
+5Protocolo Experimental: An ´alisis de Decisiones Arquitect´onicas
+Cada equipo debe ejecutar los siguientes tres experimentos sistem´aticos, registrando los tiempos de ejecuci´on y calculando la
+Aceleraci´on (S=T sec/Tdist) y Eficiencia (E=S/p×100 %):
+5.1 Experimento 1: El Dilema de la Granularidad y el Sobrecosto de Red
+Fijandop= 2workers activos, renderice una imagen Full HD (1920×1080,2,000iteraciones) variando la estrategia y el tama ˜no
+de tarea:
+Estrategia / Configuraci´on Par´ametro Tareas Creadas Tsec (ms) Tdist (ms) Speedup (S) Eficiencia (E)
+FixedCount (Franjas fijas) N= 2 2 franjas
+FixedCount (Franjas fijas) N= 4 4 franjas
+FixedCount (Franjas fijas) N= 16 16 franjas
+FixedTileSize (Grano ultrafino) Baldosas
+16×16
+8,160 baldosas
+FixedTileSize (Grano intermedio) Baldosas
+64×64
+510 baldosas
+FixedTileSize (Grano grueso) Baldosas
+256×256
+40 baldosas
+Tabla 1: Matriz de impacto de la granularidad sobre el rendimiento distribuido.
+5.2 Experimento 2: Concurrencia y Saturaci ´on del Pool de Hilos en Workers
+Fijando la mejor estrategia del Experimento 1 (ej. Baldosas de64×64), configure un Worker variando la cantidad de hilos de
+c´omputo en su ThreadPool:
+Configuraci´on A:1 hilo (monohilo puro por nodo).
+Configuraci´on B:2 hilos.
+Configuraci´on C:N=Cores f ´ısicos de la m´aquina (ej. 4 u 8 hilos).
+Configuraci´on D:64 hilos (sobredimensionamiento extremo).
+5.3 Experimento 3: Escalabilidad del Cl ´ uster y Ley de Amdahl
+Ejecute la configuraci´on ´optima variando el n ´umero de nodos Workers registrados en el cl ´uster (p= 1,p= 2yp= 4workers
+desplegados en terminales separadas o m´aquinas conectadas por red local).
+6Cuestionario de An ´alisis Conceptual y Discusi´on T´ecnica
+En el informe t´ecnico de entrega, responda rigurosamente con base en las evidencias experimentales:
+1.Colapso por Grano Fino:Al ejecutar con baldosas de16×16, se generan m ´as de 8,000 llamadas RPC sobre la red. Explique
+t´ecnicamente por qu ´e el tiempo distribuidoT dist se degrada frente a baldosas de64×64, analizando el costo de serializaci ´on
+binaria en Slice, latencia de red TCP y cambios de contexto en el Maestro.
+2.Fracaso de la Partici ´on Est ´atica:Al dividir la imagen en 2 o 4 franjas fijas (FixedCount), compare el tiempo de c ´omputo
+reportado por cada worker. ¿Por qu ´e ocurre un desbalance de carga tan severo y c ´omo el patr ´onBag of T asksresuelve esta
+limitaci´on?
+3.L´ ımites del ThreadPool:En el Experimento 2, ¿qu ´e ocurri´o al elevar el pool de hilos a 64? ¿La velocidad creci´o proporcional-
+mente o se degrad´o? Explique el fen´omeno de contenci´on de CPU y alternancia de contexto (thread context switching).
+4.Ley de Amdahl:A partir de la curva de aceleraci ´on obtenida en el Experimento 3, estime la fracci ´on estrictamente secuencial
+(1−f) del sistema impuesta por la generaci ´on de tareas, encolado y reensamblado en el Maestro.
+Computaci´on en Internet I (09810 - TIC)•Taller Evaluativo: Renderizado Distribuido de Fractales (Master-Worker) Universidad Icesi•DCSI
+---PAGE---
+=== Page 5 ===
+UNIVERSIDAD ICESI
+TALLER EVALUATIVO: COMPUTACI´ON EN INTERNET I
+Per´ıodo: 2026-2•NRC: 12378 / 12377•Modalidad: Equipos de 2 o 3 Estudiantes
+P´ag. 5 de 5
+7R ´ ubrica de Evaluaci ´on Modularizada (Escala Institucional 0.0 a 5.0)
+Criterio / Dimensi´on Pts Excelente (4.5 – 5.0) Aceptable (3.0 – 4.4) Insuficiente (0.0 – 2.9)
+1. Arquitectura y
+Ejecuci ´on Funcional
+1.8 El cl ´uster Master-Worker opera bajo el
+modelo de extracci ´on as ´ıncrona (Work-
+Pulling). Notificaci ´on, extracci ´on y con-
+solidaci´on incremental funcionan sin blo-
+queos. La imagen generada es 100 %
+id´entica al monolito.
+El cl´uster procesa y genera la imagen, pe-
+ro presenta bloqueos ocasionales por sin-
+cronizaci´on o requiere reinicios manuales
+entre ejecuciones.
+El cl ´uster falla, produce im ´agenes corrup-
+tas o el Maestro colapsa al intentar proce-
+sar las tareas.
+2. Patr´on Strategy y
+Parametrizaci´on
+1.0 Implementaci´on limpia y modular del
+patr´on Strategy. Permite alternar din ´ami-
+camente entre partici ´on por franjas y por
+baldosas mediante par´ametros de consola
+sin recompilar.
+Las estrategias funcionan pero est ´an aco-
+pladas r´ıgidamente al c´odigo del Maestro o
+requieren modificar constantes en el c ´odi-
+go fuente.
+No implementa el patr ´on Strategy o solo
+soporta una partici ´on fija sin capacidad de
+configuraci´on.
+3. Rigor
+Experimental y
+Benchmarking
+1.2 Ejecuci´on completa y met ´odica de los tres
+experimentos (Granularidad, ThreadPool y
+Escalabilidad). Tablas de datos consisten-
+tes con c ´alculo exacto de Speedup (S) y
+Eficiencia (E).
+Ejecuta los experimentos de forma incom-
+pleta, omite configuraciones clave o pre-
+senta discrepancias en el c´alculo de m´etri-
+cas.
+No presenta datos experimentales o las
+mediciones son inconsistentes y no de-
+muestran pruebas reales sobre el cl´uster.
+4. An´alisis T´ecnico y
+Discusi´on
+Arquitect´onica
+1.0 Respuestas sobresalientes al cuestionario
+conceptual. Justifica con profundidad ma-
+tem´atica y arquitect´onica el sobrecosto de
+red, desbalance de carga, saturaci ´on de
+hilos y Ley de Amdahl.
+Respuestas descriptivas pero con poco
+sustento en los datos experimentales o ar-
+gumentaci´on te´orica superficial.
+Respuestas err´oneas, triviales o copia tex-
+tual sin an´alisis propio del equipo.
+CALIFICACI ´ON
+TOTAL
+5.0 Escala Institucional Universidad Icesi: Aprobatoria≥3.0•NRC: 12378 / 12377
+INSTRUCCIONES DE ENTREGA Y METODOLOG´IAMODALIDAD: EQUIPOS DE 2 O 3
+1.Repositorio de C ´odigo (Git):Alojar el c ´odigo completo en el repositorio asignado en la organizaci´on de GitHub del curso (Compu-1), incluyendo historial de commits
+de los integrantes.
+2.Informe T ´ecnico (INFORME.md):Incluir tablas de resultados, gr ´aficas de Speedup (Svs. Tama ˜no de Baldosa ySvs. Hilos) y respuestas al Cuestionario de An ´alisis
+Conceptual.
+3.Bit ´acora de Uso ´Etico de IAG (Nivel 3):Declarar en una secci ´on del informe los prompts clave utilizados, la asistencia recibida para depurar y la justificaci ´on
+cr´ıtica del c´odigo incorporado.
+Computaci´on en Internet I (09810 - TIC)•Taller Evaluativo: Renderizado Distribuido de Fractales (Master-Worker) Universidad Icesi•DCSI
