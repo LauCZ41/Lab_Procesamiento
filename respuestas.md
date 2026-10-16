@@ -92,9 +92,13 @@ Realizado con workers repartidos entre dos maquinas:
 ## 4. Cuestionario de Análisis Conceptual y Discusión Técnica
 
 ### 1. La Trampa del Espacio Vacío vs. Zona de Estrés: 
-*Explique por qué el cómputo monohilo secuencial en la vista cl  ́asica
-(classic) parece r  ́apido a pesar de fijar 5,000 iteraciones, y contraste este comportamiento con el tiempo obtenido al renderizar
-la regi  ́on hiperdensa de Seahorse Valley. ¿Por qu  ́e la vista macro oculta la necesidad de un clúster distribuid*
+*Explique por qué el cómputo monohilo secuencial en la vista clásica
+(classic) parece rápido a pesar de fijar 5,000 iteraciones, y contraste este comportamiento con el tiempo obtenido al renderizar
+la región hiperdensa de Seahorse Valley. ¿Por qué la vista macro oculta la necesidad de un clúster distribuido?*
+
+En la vista clasica, aun que se establezca un maxmo de 5.000 iteraciones, la mayoria de los puntos no llega a ese limite: aproximadamente el 76% escapa en menos de 20 iteraciones. Por eso, el calculo secuencial parece rapido: gran parte de la imagen se resuelve con pocas operaciones.
+
+Seahorse Valley es diferente porque concentra muchos pixeles en la frontera del fractal, donde cada uno puede requerir entre 4.000 y 5.000 iteraciones. En la medición disponible, el calculo secuencial tardo 114.915 ms, mientras que al repartir el trabajo entre dos workers toma 15.137 ms. Asi, la vista panoramica puede dar una impresión engañosa, no muestra la carga mucho mayor de las zonas densas, donde distribuir el calculo si aporta una mejora clara.
 
 ### 2. Colapso por Grano Fino
 *Al ejecutar con baldosas de 16x16 (o grano muy fino), se generan más de 8,000 llamadas RPC sobre la red. Explique técnicamente por qué el tiempo distribuido $T_{dist}$ se degrada frente a baldosas de 64x64, analizando el costo de serialización binaria en Slice, latencia de red TCP y cambios de contexto en el Maestro.*  
