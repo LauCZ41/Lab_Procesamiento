@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Experimento 1: Dilema de la Granularidad y Sobrecosto de Red
+## 1. Experimento 
 
 **Computador:  Lenovo IDEAPAD 5 (2-in-1). Processor: Ryzen 7 8845HS - Laura** 
 | Estrategia | Parámetro | Tareas Generadas | $T_{\text{sec}}$ (ms) | $T_{\text{dist}}$ (ms) | Speedup ($S = \frac{T_{\text{sec}}}{T_{\text{dist}}}$) | Eficiencia ($E = \frac{S}{p} \times 100$) |
@@ -24,7 +24,7 @@
 
 ---
 
-## 2. Experimento 2: Concurrencia y Saturación del Pool de Hilos en Workers
+## 2. Experimento 
 
 **Computador:  Lenovo IDEAPAD 5 (2-in-1). Processor: Ryzen 7 8845HS - Laura** 
 
@@ -42,7 +42,7 @@
 
 ---
 
-## 3. Experimento 3: Escalabilidad del Clúster y Ley de Amdahl
+## 3. Experimento 
 
 * **Estrategia Fija:** FixedTileSize (Baldosas 64x64)
 * **Configuración de Hilos por Worker:** 4 u 8 hilos (óptimo por worker)
