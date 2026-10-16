@@ -77,10 +77,9 @@ Realizado con workers repartidos entre dos maquinas:
 ## 4. Cuestionario de Análisis Conceptual y Discusión Técnica
 
 ### 1. Colapso por Grano Fino
-*Al ejecutar con baldosas de 16x16 (o grano muy fino), se generan más de 8,000 llamadas RPC sobre la red. Explique técnicamente por qué el tiempo distribuido $T_{\text{dist}}$ se degrada frente a baldosas de 64x64, analizando el costo de serialización binaria en Slice, latencia de red TCP y cambios de contexto en el Maestro.*
+*Al ejecutar con baldosas de 16x16 (o grano muy fino), se generan más de 8,000 llamadas RPC sobre la red. Explique técnicamente por qué el tiempo distribuido $T_{\text{dist}}$ se degrada frente a baldosas de 64x64, analizando el costo de serialización binaria en Slice, latencia de red TCP y cambios de contexto en el Maestro.*  
 
-> **Respuesta:**  
-> [Completar análisis aquí]
+Al utilizar un grano muy fino como el de 16x16 se tienen que realizar más de 8,000 llamadas RPC, lo cual no es eficiente porque se incrementa la latencia de red en TCP por cada paquete enviado y al ser tantas llamadas, el sistema pierde demasiado tiempo empaquetando y reconstruyendo los datos. Además, el Maestro se satura atendiendo tantas peticiones al mismo tiempo, sufriendo una sobrecarga por cambios de contexto entre los hilos. En cambio cuando se utilizan baldosas de 64x64 las llamadas se reducen, por lo que no se genera tanta latencia, se evita el desgaste de serializar miles de paquetes pequeños y el Maestro puede procesar y consolidar la imagen mucho más rápido sin saturar la CPU.
 
 ---
 
