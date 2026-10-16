@@ -20,7 +20,22 @@
 | FixedTileSize (Baldosas) | 128 | 510 | 114915 | 15175 | 7.57x | 378.6% |
 | FixedTileSize (Baldosas) | 256 | 135 | 114915 | 15216 | 7.55x | 377.6% |
 
-> La configuración óptima identificada es **Baldosas de 64x64**, alcanzando el menor tiempo distribuido (15,137 ms) y el mayor Speedup (7.59x).
+> La configuración óptima identificada es **Baldosas de 64x64**, alcanzando el menor tiempo distribuido (15137 ms) y el mayor Speedup (7.59x).
+
+**Computador:  Victus by HP Gaming Laptop 15-fa0xxx. Processor: 12th Gen Intel(R) Core(TM) i5-12450H (2.00 GHz) - Nicholas** 
+
+| Estrategia | Parámetro | Tareas Generadas | $T_{\text{sec}}$ (ms) | $T_{\text{dist}}$ (ms) | Speedup ($S = \frac{T_{\text{sec}}}{T_{\text{dist}}}$) | Eficiencia ($E = \frac{S}{p} \times 100$) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| FixedCount (Franjas) | 2 | 2 | 120767 | 55736 | 2,17x | 108,3% |
+| FixedCount (Franjas) | 4 | 4 | 120767 | 26736 | 4,52x | 225,9% |
+| FixedCount (Franjas) | 8 | 8 | 120767 | 14796 | 8,16x | 408,1% |
+| FixedCount (Franjas) | 16 | 16 | 120767 | 14426 | 8,37x | 418,6% |
+| FixedTileSize (Baldosas) | 32 | 8160 | 120767 | 14268 | 8,46x | 423,2% |
+| FixedTileSize (Baldosas) | 64 | 2040 | 120767 | 13998 | 8,63x | 431,4% |
+| FixedTileSize (Baldosas) | 128 | 510 | 120767 | 14082 | 8,58x | 428,8% |
+| **FixedTileSize (Baldosas)** | **256** | **135** | **120767** | **13909** | **8,68x** | **434,1%** |
+
+> La configuración óptima identificada es **Baldosas de 256x256**, alcanzando el menor tiempo distribuido (13909 ms) y el mayor Speedup (8.68x).
 
 ---
 
