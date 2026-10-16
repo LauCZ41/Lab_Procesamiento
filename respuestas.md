@@ -1,10 +1,5 @@
-# Informe de Taller Evaluativo: Renderizado Distribuido de Fractales (Patrón Master-Worker)
 
-**Asignatura:** Computación en Internet I (`09810 - TIC`)  
-**Institución:** Universidad Icesi  
-**Semestre:** 2026-2 | **NRC:** 12378 / 12377  
-
-### Integrantes del Equipo:
+### Integrantes:
 1. **Estudiante 1:** Laura Andrea Cárdenas Zuelta  - **Código:** A00411072
 2. **Estudiante 2:** Nicholas Solis Pinilla  - **Código:** A00411205
 3. **Estudiante 3:** Juan José Rojas Correa  - **Código:** A00
@@ -13,6 +8,7 @@
 
 ## 1. Experimento 1: Dilema de la Granularidad y Sobrecosto de Red
 
+**Computador:  Lenovo IDEAPAD 5 (2-in-1). Processor: Ryzen 7 8845HS - Laura** 
 | Estrategia | Parámetro | Tareas Generadas | $T_{\text{sec}}$ (ms) | $T_{\text{dist}}$ (ms) | Speedup ($S = \frac{T_{\text{sec}}}{T_{\text{dist}}}$) | Eficiencia ($E = \frac{S}{p} \times 100$) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | FixedCount (Franjas) | 2 | 2 | 114915 | 61211 | 1.88x | 93.9% |
@@ -29,6 +25,8 @@
 ---
 
 ## 2. Experimento 2: Concurrencia y Saturación del Pool de Hilos en Workers
+
+**Computador:  Lenovo IDEAPAD 5 (2-in-1). Processor: Ryzen 7 8845HS - Laura** 
 
 * **Estrategia Fija:** FixedTileSize (Baldosas 64x64)
 * **Preset / Región:** `seahorse` (3840 x 2160, 5000 iteraciones)
