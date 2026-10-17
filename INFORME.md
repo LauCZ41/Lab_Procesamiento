@@ -51,6 +51,10 @@
 
 > La configuración óptima identificada es **Baldosas de 64x64**, alcanzando el menor tiempo distribuido (6874 ms) y el mayor Speedup (9,37x).
 
+
+<img width="1192" height="745" alt="image" src="https://github.com/user-attachments/assets/81f8832d-3442-4ce7-949c-2a43a44dc535" />
+
+
 ---
 
 ## 2. Experimento 
@@ -96,6 +100,8 @@
 | **B (Bihilo)** | 2 | 64297 | 34557 | 1,86x | 93,1% | 2 hilos en paralelo |
 | **C (Cores físicos)** | 8 | 64993 | 10035 | 6,48x | 80,9% | Saturación de cores físicos |
 | **D (Sobredimensionado)** | 64 | 64897 | 7304 | 8,89x | 13,9% | Contención extrema / Context switching |
+
+<img width="1177" height="746" alt="image" src="https://github.com/user-attachments/assets/64b47711-b683-472a-b501-fc28a1d8cd3c" />
 
 ---
 
