@@ -113,7 +113,7 @@
 
 Realizado con workers repartidos entre dos maquinas:
 *  Lenovo IDEAPAD 5 (2-in-1). Processor: Ryzen 7 8845HS
-* 
+*  Victus by HP Gaming Laptop 15-fa0xxx. Processor: 12th Gen Intel(R) Core(TM) i5-12450H (2.00 GHz) 
 ---
 
 ## 4. Cuestionario de Análisis Conceptual y Discusión Técnica
