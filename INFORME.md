@@ -80,7 +80,7 @@
 | :--- | :---: |:---------------------:|:----------------------:|:------------------------------------------------------:|:----------------------------------------------------:| :--- |
 | **A (Monohilo)** | 1 |        129069         |         142490         |                          0,91x                          |                         90,6                         | Monohilo puro por nodo |
 | **B (Bihilo)** | 2 |        142915         |         52005          |                          2,75x                          |                        274,8                         | 2 hilos en paralelo |
-| **C (Cores físicos)** | 8 |        12988         |         22934          |                           5,66x                          |                        566,3                         | Saturación de cores físicos |
+| **C (Cores físicos)** | 8 |        129880         |         22934          |                           5,66x                          |                        566,3                         | Saturación de cores físicos |
 | **D (Sobredimensionado)**| 64 |        181027         |          15347          |                          11,80x                          |                        1179,6                        | Contención extrema / Context switching |
 
 **Computador: Lenovo LOQ 15IAX9. Processor: 12th Gen Intel(R) Core(TM) i5-12450HX - Juan José**
