@@ -1,7 +1,7 @@
 ### Integrantes:
 1. **Estudiante 1:** Laura Andrea Cárdenas Zuelta  - **Código:** A00411072
 2. **Estudiante 2:** Nicholas Solis Pinilla  - **Código:** A00411205
-3. **Estudiante 3:** Juan José Rojas Correa  - **Código:** A00
+3. **Estudiante 3:** Juan José Rojas Correa 
 
 ---
 
