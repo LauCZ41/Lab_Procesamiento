@@ -1,7 +1,7 @@
 ### Integrantes:
 1. **Estudiante 1:** Laura Andrea Cárdenas Zuelta  - **Código:** A00411072
 2. **Estudiante 2:** Nicholas Solis Pinilla  - **Código:** A00411205
-3. **Estudiante 3:** Juan José Rojas Correa 
+3. **Estudiante 3:** Juan José Rojas Correa - **Código:** A00409833
 
 ---
 
@@ -64,10 +64,10 @@
 
 | Configuración | Hilos en Worker | $T_{\text{sec}}$ (ms) | $T_{\text{dist}}$ (ms) | Speedup ($S = \frac{T_{\text{sec}}}{T_{\text{dist}}}$) | Eficiencia ($E = \frac{S}{\text{Hilos}} \times 100$) | Observaciones |
 | :--- | :---: |:---------------------:|:----------------------:|:------------------------------------------------------:|:----------------------------------------------------:| :--- |
-| **A (Monohilo)** | 1 |        115364         |         119664         |                          0.96                          |                         96.4                         | Monohilo puro por nodo |
-| **B (Bihilo)** | 2 |        115383         |         60709          |                          1.90                          |                        190.1                         | 2 hilos en paralelo |
-| **C (Cores físicos)** | 8 |        114809         |         15380          |                          7.46                          |                        745.5                         | Saturación de cores físicos |
-| **D (Sobredimensionado)**| 64 |        116407         |          8745          |                         13.31                          |                        1331.1                        | Contención extrema / Context switching |
+| **A (Monohilo)** | 1 |        115364         |         119664         |                          0.96X                          |                         96.4%                        | Monohilo puro por nodo |
+| **B (Bihilo)** | 2 |        115383         |         60709          |                          1.90X                          |                        190.1%                       | 2 hilos en paralelo |
+| **C (Cores físicos)** | 8 |        114809         |         15380          |                          7.46X                          |                        745.5%                         | Saturación de cores físicos |
+| **D (Sobredimensionado)**| 64 |        116407         |          8745          |                         13.31X                          |                        1331.1%                        | Contención extrema / Context switching |
 
 **Computador:  Victus by HP Gaming Laptop 15-fa0xxx. Processor: 12th Gen Intel(R) Core(TM) i5-12450H (2.00 GHz) - Nicholas** 
 
